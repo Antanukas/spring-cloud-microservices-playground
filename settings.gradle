@@ -1,0 +1,3 @@
+include 'tpay-config-server'
+include 'tpay-service-discovery'
+include 'tpay-accounts-service'
