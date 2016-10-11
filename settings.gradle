@@ -1,5 +1,6 @@
 include 'tpay-config-server'
 include 'tpay-service-discovery'
 include 'tpay-api-gateway'
-include 'tpay-accounts-service'
+include 'tpay-accounts-service/api'
+include 'tpay-accounts-service/impl'
 include 'tpay-transfers-service'

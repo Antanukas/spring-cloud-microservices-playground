@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @EnableEurekaClient
 @RestController
-public class AccountsServiceApplication {
+public class AccountsServiceApplication implements AccountsServiceClient {
 
-	@GetMapping("/")
+    @Override
 	public String hi() {
 		return "Hi";
 	}
