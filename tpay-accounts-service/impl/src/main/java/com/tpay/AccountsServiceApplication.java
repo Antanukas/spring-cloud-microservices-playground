@@ -56,11 +56,13 @@ public class AccountsServiceApplication implements AccountsServiceClient, Resour
 
 	@Override
 	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-
 	}
 
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/hystrix.stream").permitAll();
+		http.authorizeRequests()
+			.antMatchers("/hystrix.stream").permitAll()
+			.anyRequest().authenticated()
+		;
 	}
 }
