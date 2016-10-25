@@ -1,11 +1,17 @@
 package com.tpay;
 
+import java.math.BigDecimal;
+
+import com.tpay.events.BalanceUpdatedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.bus.jackson.RemoteApplicationEventScan;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,14 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @EnableResourceServer
 @EnableHystrix
+@RemoteApplicationEventScan("com.tpay.events")
 public class AccountsServiceApplication implements AccountsServiceClient, ResourceServerConfigurer {
 
 	@Value("${authserver.secret}")
 	private String authSecret;
 
+	@Autowired
+	private ApplicationContext ctx;
+
     @Override
 	public String hi() {
 		System.out.println(SecurityContextHolder.getContext().getAuthentication());
+		System.out.println(ctx.getApplicationName() + " NAME");
+		ctx.publishEvent(new BalanceUpdatedEvent(this, ctx.getId(), new BigDecimal("20"), new BigDecimal("50")));
 		return "Hi";
 	}
 
