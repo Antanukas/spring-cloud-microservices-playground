@@ -2,6 +2,8 @@ package com.tpay;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
+
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
@@ -31,7 +33,8 @@ public class RequestLoggingFilter extends ZuulFilter {
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
 
-        LOG.info(String.format("%s request to %s", request.getMethod(), request.getRequestURL().toString()));
+        LOG.info("{} request to {}", request.getMethod(), request.getRequestURL().toString());
+        LOG.info("Headers {}", Collections.list(ctx.getRequest().getHeaderNames()));
         return null;
     }
 }
