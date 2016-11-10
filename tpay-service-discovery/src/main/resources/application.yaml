@@ -1,3 +1,8 @@
+tpay:
+  autoconfigure:
+    resourceserver: false
+    events: true
+
 server:
   port: 8761
 

@@ -27,7 +27,10 @@ repositories {
 
 
 dependencies {
-	compile project(':tpay-commons')
+	compile(project(':tpay-commons')) {
+		//To not secure everything b default
+		exclude module: 'spring-cloud-starter-oauth2'
+	}
 
 	compile('org.springframework.cloud:spring-cloud-starter-bus-amqp')
 	compile('org.springframework.cloud:spring-cloud-starter-zuul')

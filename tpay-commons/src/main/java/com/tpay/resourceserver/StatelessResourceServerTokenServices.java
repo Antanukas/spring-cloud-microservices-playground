@@ -1,4 +1,4 @@
-package com.tpay;
+package com.tpay.resourceserver;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
