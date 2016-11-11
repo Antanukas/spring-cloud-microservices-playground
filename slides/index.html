@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Spring Cloud Microservices</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/white.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+        <section>
+          <h2>Spring Cloud Miscroservices</h2>
+          Antanas Bastys
+
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Sources
+
+                - http://cloud.spring.io/spring-cloud-static/spring-cloud.html
+                - Google
+                - Code
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Infrastructure Service - Netflix Eureka
+
+                - Implements service discovery
+                - Defaults to http://localhost:8761/
+                - Standalone or Peer mode
+                - `@EnableEurekaServer`
+                - http://cloud.spring.io/spring-cloud-static/spring-cloud.html#spring-cloud-eureka-server
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Infrastructure Service: Config Server
+
+                - @EnableConfigServer
+                - http://localhost:8888/application-default.properties
+                - http://localhost:8888/accounts-default.properties
+                - http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_spring_cloud_config
+                - local or external git repo
+                - can be notified with webhooks from Github or custom
+                ```
+                spring.cloud.config.server.git.uri=file:///repo
+                spring.cloud.config.server.git.searchPaths=some-folder
+                ```
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Other services
+
+                - `org.springframework.cloud:spring-cloud-starter-config`
+                - `org.springframework.cloud:spring-cloud-starter-eureka`
+                - `@EnableEurekaClient`
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Business Service: OAuth2 Authorization Server
+
+                - Issues JWT tokens
+                - Should provide basic user info
+                - `spring-cloud-starter-oauth2`
+                - POST /oauth/token to get token
+                - http://localhost:8888/authserver-default.properties
+                - https://projects.spring.io/spring-security-oauth/docs/oauth2.html
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Business Service: Accounts
+
+                - Two modules: client and impl
+                - `client` module to be used by consumers
+                - Is a Resource Server
+                - Secured using custom ResourceServerAutoConfiguration
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Accounts security
+
+                - Stateless only using information from token
+                - Could be used using RemoteTokenServices but then each request will call Authorization Server
+                - by including tpay-commons your endpoints become secured out of the box
+                - Custom StatelessResourceServerTokenServices implemented
+                - WARNING! Token can not be invalidated this way so should be short lived
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Accounts client
+
+                - Uses Netflix Feign library
+                - AccountsServiceClient is used by client and annotated with Spring MVC routing annotations
+                - Controller just have to implement methods - no need to duplicate annotations
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Business Service: Transfers
+
+                - Consumes Accounts service using FeignClient
+                - FeignClient performs load balancing
+                - FeignClient has Hystrix support
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Transfers - Feign config
+
+                ```
+                compile project(':tpay-accounts-service/api')
+
+                @EnableFeignClients(clients = AccountsServiceClient.class)
+                //for some reason I needed this
+                @ImportAutoConfiguration({ FeignAutoConfiguration.class })
+
+                // Forwards token to Feign client
+                @Bean requestTokenBearerInterceptor()
+
+                @Autowired AccountsServiceClient accountsService;
+                ```
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Transfers - Hystrix
+
+                - `spring-cloud-starter-hystrix`
+                - `@EnableHystrix`
+                = `hystrix.shareSecurityContext=true`
+                - http://localhost:9001/hystrix.stream
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Infra service : Api Gateway
+
+                - Only service exposed to public
+                - apigateway.properties for routing
+                - http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_router_and_filter_zuul
+                - Performs load balancing using Netflix Ribbon
+
+                ```
+                @EnableZuulProxy
+                // Passthrough Authorization header
+                zuul.sensitiveHeaders=Cookie,Set-Cookie
+                compile('org.springframework.cloud:spring-cloud-starter-zuul')
+                ```
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Infra service : Metrics Dashboard
+
+                - Uses Netflix Turbine
+                - Provides Hystrix dashboard
+                - Aggregates data from all services
+                - http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_circuit_breaker_hystrix_dashboard
+                - http://localhost:9003/hystrix/monitor?stream=http%3A%2F%2Flocalhost%3A9003%2Fturbine.stream%3Fcluster%3Ddefault&delay=2&title=Services
+
+                ```
+                @EnableHystrixDashboard
+                @EnableTurbine
+                @EnableDiscoveryClient
+
+                compile('org.springframework.cloud:spring-cloud-starter-hystrix-dashboard')
+                compile('org.springframework.cloud:spring-cloud-starter-turbine')
+                ```
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Infra service : Message Bus
+
+                - Out of the box: RabbitMQ or Kafka
+                ```
+                // http://cloud.spring.io/spring-cloud-static/spring-cloud-bus/1.2.1.RELEASE/
+                compile('org.springframework.cloud:spring-cloud-starter-bus-amqp')
+                compile('org.springframework.cloud:spring-cloud-starter-bus-kafka')
+                ```
+
+                - Enables service restart on configuration change
+                - Publishing events between services
+                - Event classes must be in some commons because are needed by both sides
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Business service: Smses
+
+                ```
+                //Sender
+                @Autowired private ApplicationContext ctx;
+                ctx.publishEvent(new BalanceUpdatedEvent(this, ctx.getId()));
+
+                //Consumer
+                @EventListener
+                public void handleEvent(BalanceUpdatedEvent e) { /* Some code */ }
+                ```
+
+                - Configured `EventsAutoConfiguration`
+                - Events extend `RemoteApplicationEvent`
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Automatic configuration refresh
+
+                - POST to http://localhost:8888/monitor
+                - Now on config change Config server automatically propagates changes
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Span multiple instances which gets picked up automatically
+
+                ```
+                $ CUSTOM_SERVER_PORT=7777 gradle bootRun
+                ```
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Preparing monolith for microservices
+
+                - Code monolith by keeping in mind microservices
+                - Imagine each package as a microservice
+                - Depend only on *Service classes of other packages
+                - Later these service classes will become Feign Client interfaces
+                - Spring events will have to start extending RemoteApplicationEvent instead of ApplicationEvent
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Public vs Internal endpoints/methods
+
+                - Separate endpoints that have to be exposed via Gateway from internal
+                - Internal endpoints are needed of inter service communication
+                - Public endpoints might have more security constraints
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Lagom
+
+                - Alternative platfrom - https://www.lightbend.com/lagom
+                - Reactive by default
+                - CQRS + Event sourcing for persitance by default
+                - Implemented in Scala but currently API is in Java
+                - Scala support planned
+                - Opensource and free
+                - ConductR DevOps environment when paid
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                # TODO - Devops
+
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                # The End
+
+            </script>
+        </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+        controls: false,
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+
+      Reveal.configure({ slideNumber: 'c' });
+		</script>
+	</body>
+</html>

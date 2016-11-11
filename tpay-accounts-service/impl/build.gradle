@@ -18,6 +18,11 @@ jar {
 	baseName = 'tpay-accounts-service-impl'
 	version = '0.0.1-SNAPSHOT'
 }
+
+bootRun {
+	jvmArgs = ["-Xmx256M"]
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 

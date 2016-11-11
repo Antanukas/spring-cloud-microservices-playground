@@ -25,6 +25,9 @@ repositories {
 	mavenCentral()
 }
 
+bootRun {
+	jvmArgs = ["-Xmx256M"]
+}
 
 dependencies {
 	compile(project(':tpay-commons')) {

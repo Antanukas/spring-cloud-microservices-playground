@@ -13,6 +13,6 @@ public class Controller {
     @GetMapping
     public String fromAccounts() {
         String fromAccounts = accountsService.hi();
-        return fromAccounts;
+        return "Transfers: Greeting from accounts - " + fromAccounts;
     }
 }

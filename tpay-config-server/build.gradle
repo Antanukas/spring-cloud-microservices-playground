@@ -25,17 +25,25 @@ repositories {
 	mavenCentral()
 }
 
+bootRun {
+	jvmArgs = ["-Xmx256M"]
+}
 
 dependencies {
 	compile(project(':tpay-commons')) {
-		//To not secure everything b default
+		//To not secure everything by default
 		exclude module: 'spring-cloud-starter-oauth2'
 	}
 
 	compile('org.springframework.cloud:spring-cloud-starter-bus-amqp')
-	compile('org.springframework.cloud:spring-cloud-config-server')
-	compile('org.springframework.cloud:spring-cloud-config-monitor')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
+
+	//To run config server
+	compile('org.springframework.cloud:spring-cloud-config-server')
+	//To refresh configuration of services
+	compile('org.springframework.cloud:spring-cloud-config-monitor')
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
