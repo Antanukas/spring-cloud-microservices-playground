@@ -40,6 +40,11 @@
         </section>
         <section data-markdown>
             <script type="text/template">
+                ![Services](services.png "Services")
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
                 ## Infrastructure Service - Netflix Eureka
 
                 - Implements service discovery
@@ -259,6 +264,31 @@
                 - Separate endpoints that have to be exposed via Gateway from internal
                 - Internal endpoints are needed of inter service communication
                 - Public endpoints might have more security constraints
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Microservices - advantages
+
+                - Improved fault isolation
+                - Not constrained to single stack
+                - New developer can understand functionality service by service
+                - Services can be distributed among teams
+                - Easier to scale
+                    - Easy to fire up additional instance
+                    - For some services separate db servers can be used if needed
+            </script>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Microservices - disadvantages
+
+                - Many moving parts - harder to develop, harder to setup dev env
+                - Multiple database and transaction management is harder
+                  - Imagine how one would implement Saga pattern
+                - Deployment is much harder
+                - Monitoring is harder
+                - To solve these issues more tooling, knowledge is needed
             </script>
         </section>
         <section data-markdown>
